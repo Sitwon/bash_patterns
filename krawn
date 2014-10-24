@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# A poor man's substitute for cron.
+
+while true; do
+	if [ "$( date +%H%M )" != "1200" ]; then
+		# Sleep until the current date matches the desired schedule
+		sleep 45
+	else
+		# Run some task
+		sleep 60
+	fi
+done
