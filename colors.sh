@@ -125,7 +125,13 @@ if [ -z "${COLORS_DEFINIED}" ]; then
 				esac
 				CODE="\033[${CODE}m"
 				eval "export ${VARNAME}=\"${CODE}\""
+				if [ "${BASH_SOURCE}" = "${0}" ]; then
+					echo -en "${CODE}${VARNAME}${RESET_COLOR} "
+				fi
 			done
+		if [ "${BASH_SOURCE}" = "${0}" ]; then
+			echo
+		fi
 		done
 	done
 	export COLORS_DEFINED="yes"
