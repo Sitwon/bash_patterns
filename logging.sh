@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ -n "${LOGGING_DEFINED}" ]; then
 	return
 else
@@ -28,8 +30,8 @@ info_do(){ info && eval "${@}" >&2 || return 0; }
 warn_do(){ warn && eval "${@}" >&2 || return 0; }
 error_do(){ error && eval "${@}" >&2 || return 0; }
 
-trace_log(){ trace_do echo -e "\${BOLD_WHITE}[TRACE]\${BOLD_BLACK} \"${*}\"\${RESET_COLOR}"; }
-debug_log(){ debug_do echo -e "\${BOLD_WHITE}[DEBUG]\${BOLD_BLUE} \"${*}\"\${RESET_COLOR}"; }
+trace_log(){ trace_do echo -e "\${BOLD_WHITE}[TRACE]\${BOLD_BLACK} ${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
+debug_log(){ debug_do echo -e "\${BOLD_WHITE}[DEBUG]\${BOLD_BLUE} ${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
 info_log(){ info_do echo -e "\${BOLD_WHITE}[INFO ]\${RESET_COLOR} \"${*}\"\${RESET_COLOR}"; }
 warn_log(){ warn_do echo -e "\${BOLD_WHITE}[WARN ]\${BOLD_YELLOW} \"${*}\"\${RESET_COLOR}"; }
 error_log(){ error_do echo -e "\${BOLD_WHITE}[ERROR]\${BOLD_WHITE_RED} \"${*}\"\${RESET_COLOR}"; }
