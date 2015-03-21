@@ -15,46 +15,47 @@ INFO=2
 WARN=1
 ERROR=0
 
-LOG_LEVEL="${LOG_LEVEL:-0}"
-DEBUG_LEVEL="${DEBUG_LEVEL:-3}"
+LOG_LEVEL="${LOG_LEVEL:-${INFO}}"
 
-trace(){ [ ${DEBUG_LEVEL} -ge 4 ] || return 1; }
-debug(){ [ ${DEBUG_LEVEL} -ge 3 ] || return 1; }
-info(){ [ ${DEBUG_LEVEL} -ge 2 ] || return 1; }
-warn(){ [ ${DEBUG_LEVEL} -ge 1 ] || return 1; }
-error(){ [ ${DEBUG_LEVEL} -ge 0 ] || return 1; }
+_LOG_TARGETS=( STDERR )
 
-trace_do(){ trace && eval "${@}" >&2 || return 0; }
-debug_do(){ debug && eval "${@}" >&2 || return 0; }
-info_do(){ info && eval "${@}" >&2 || return 0; }
-warn_do(){ warn && eval "${@}" >&2 || return 0; }
-error_do(){ error && eval "${@}" >&2 || return 0; }
+trace(){ [ ${LOG_LEVEL} -ge ${TRACE} ] || return 1; }
+debug(){ [ ${LOG_LEVEL} -ge ${DEBUG} ] || return 1; }
+info(){ [ ${LOG_LEVEL} -ge ${INFO} ] || return 1; }
+warn(){ [ ${LOG_LEVEL} -ge ${WARN} ] || return 1; }
+error(){ [ ${LOG_LEVEL} -ge ${ERROR} ] || return 1; }
 
-trace_log(){ trace_do echo -e "\${BOLD_WHITE}[TRACE]\${BOLD_BLACK} ${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
-debug_log(){ debug_do echo -e "\${BOLD_WHITE}[DEBUG]\${BOLD_BLUE} ${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
-info_log(){ info_do echo -e "\${BOLD_WHITE}[INFO ]\${RESET_COLOR} \"${*}\"\${RESET_COLOR}"; }
-warn_log(){ warn_do echo -e "\${BOLD_WHITE}[WARN ]\${BOLD_YELLOW} \"${*}\"\${RESET_COLOR}"; }
-error_log(){ error_do echo -e "\${BOLD_WHITE}[ERROR]\${BOLD_WHITE_RED} \"${*}\"\${RESET_COLOR}"; }
+trace_do(){ trace && eval "${@}" >&3 || return 0; }
+debug_do(){ debug && eval "${@}" >&3 || return 0; }
+info_do(){ info && eval "${@}" >&3 || return 0; }
+warn_do(){ warn && eval "${@}" >&3 || return 0; }
+error_do(){ error && eval "${@}" >&3 || return 0; }
+
+trace_log(){ trace_do echo -e "\${BOLD_WHITE}[TRACE] \${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
+debug_log(){ debug_do echo -e "\${BOLD_WHITE}[DEBUG] \${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
+info_log(){ info_do echo -e "\${BOLD_WHITE}[INFO ] \${RESET_COLOR}\"${*}\"\${RESET_COLOR}"; }
+warn_log(){ warn_do echo -e "\${BOLD_WHITE}[WARN ] \${BOLD_YELLOW}\"${*}\"\${RESET_COLOR}"; }
+error_log(){ error_do echo -e "\${BOLD_WHITE}[ERROR] \${BOLD_WHITE_RED}\"${*}\"\${RESET_COLOR}"; }
 
 log(){
 	case "${1}" in
-		4)
+		${TRACE})
 			shift
 			trace_log "${*}"
 			;;
-		3)
+		${DEBUG})
 			shift
 			debug_log "${*}"
 			;;
-		2)
+		${INFO})
 			shift
 			info_log "${*}"
 			;;
-		1)
+		${WARN})
 			shift
 			warn_log "${*}"
 			;;
-		0)
+		${ERROR})
 			shift
 			error_log "${*}"
 			;;
@@ -66,3 +67,51 @@ log(){
 	esac
 }
 
+value_of() {
+	while [ $# -ge 1 ]; do
+		echo "${1}=\\\"${!1}\\\""
+		shift
+	done
+}
+
+enable_syslog() {
+	add_log_target SYSLOG
+}
+
+init_log_targets() {
+	FIRST=
+	exec 3>&-
+	declare -p _LOG_TARGETS
+	for TARGET in ${_LOG_TARGETS[@]}; do
+		case "${TARGET}" in
+			"STDOUT")
+				[ -z "${FIRST}" ] && exec 3>&1 || exec 3> >(tee >(cat) >&3)
+				FIRST=done
+				;;
+			"STDERR")
+				[ -z "${FIRST}" ] && exec 3>&2 || exec 3> >(tee >(cat >&2) >&3)
+				FIRST=done
+				;;
+			"SYSLOG")
+				[ -z "${FIRST}" ] && exec 3> >(logger -t "$(basename "${0}")") \
+					|| exec 3> >(tee >(logger -t "$(basename "${0}")") >&3)
+				FIRST=done
+				;;
+			*)
+				[ -z "${FIRST}" ] && exec 3> "${TARGET}" \
+					|| exec 3> >(tee -a "${TARGET}" >&3)
+				FIRST=done
+				;;
+		esac
+	done
+}
+
+add_log_target() {
+	while [ $# -ge 1 ]; do
+		_LOG_TARGETS[${#_LOG_TARGETS[*]}]="${1}"
+		shift
+	done
+	init_log_targets
+}
+
+init_log_targets
