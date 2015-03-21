@@ -31,11 +31,51 @@ info_do(){ info && eval "${@}" >&3 || return 0; }
 warn_do(){ warn && eval "${@}" >&3 || return 0; }
 error_do(){ error && eval "${@}" >&3 || return 0; }
 
-trace_log(){ trace_do echo -e "\${BOLD_WHITE}[TRACE] \${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
-debug_log(){ debug_do echo -e "\${BOLD_WHITE}[DEBUG] \${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}"; }
-info_log(){ info_do echo -e "\${BOLD_WHITE}[INFO ] \${RESET_COLOR}\"${*}\"\${RESET_COLOR}"; }
-warn_log(){ warn_do echo -e "\${BOLD_WHITE}[WARN ] \${BOLD_YELLOW}\"${*}\"\${RESET_COLOR}"; }
-error_log(){ error_do echo -e "\${BOLD_WHITE}[ERROR] \${BOLD_WHITE_RED}\"${*}\"\${RESET_COLOR}"; }
+trace_log(){
+	if [ $# -eq 0 ]; then
+		while read _LINE; do
+			trace_log "$_LINE"
+		done
+		return
+	fi
+	trace_do echo -e "\${BOLD_WHITE}[TRACE] \${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}";
+}
+debug_log(){
+	if [ $# -eq 0 ]; then
+		while read _LINE; do
+			debug_log "$_LINE"
+		done
+		return
+	fi
+	debug_do echo -e "\${BOLD_WHITE}[DEBUG] \${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${*}\"\${RESET_COLOR}";
+}
+info_log(){
+	if [ $# -eq 0 ]; then
+		while read _LINE; do
+			info_log "$_LINE"
+		done
+		return
+	fi
+	info_do echo -e "\${BOLD_WHITE}[INFO ] \${RESET_COLOR}\"${*}\"\${RESET_COLOR}";
+}
+warn_log(){
+	if [ $# -eq 0 ]; then
+		while read _LINE; do
+			warn_log "$_LINE"
+		done
+		return
+	fi
+	warn_do echo -e "\${BOLD_WHITE}[WARN ] \${BOLD_YELLOW}\"${*}\"\${RESET_COLOR}";
+}
+error_log(){
+	if [ $# -eq 0 ]; then
+		while read _LINE; do
+			error_log "$_LINE"
+		done
+		return
+	fi
+	error_do echo -e "\${BOLD_WHITE}[ERROR] \${BOLD_WHITE_RED}\"${*}\"\${RESET_COLOR}";
+}
 
 log(){
 	case "${1}" in
@@ -81,7 +121,6 @@ enable_syslog() {
 init_log_targets() {
 	FIRST=
 	exec 3>&-
-	declare -p _LOG_TARGETS
 	for TARGET in ${_LOG_TARGETS[@]}; do
 		case "${TARGET}" in
 			"STDOUT")
