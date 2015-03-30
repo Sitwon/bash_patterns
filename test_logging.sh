@@ -5,6 +5,7 @@ source logging.sh
 info_log "argument"
 info_log <<<"stdin"
 echo "pipe" | info_log
+echo "redirection" &> >(info_log)
 info_log <<EOF
 multi
 
@@ -39,3 +40,15 @@ info_log "info"
 debug_log "debug"
 trace_log "trace"
 
+function func2() {
+	debug_log "foo"
+	debug_log <<<"bar"
+}
+
+function func1() {
+	debug_log "foo"
+	debug_log <<<"bar"
+	func2
+}
+
+func1
