@@ -43,7 +43,7 @@ trace_log "trace"
 function func2() {
 	debug_log "foo"
 	debug_log <<<"bar"
-	print_stack_trace | debug_log
+	print_stack_trace | info_log
 }
 
 function func1() {
