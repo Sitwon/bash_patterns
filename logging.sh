@@ -119,6 +119,18 @@ value_of() {
 	done
 }
 
+print_stack_trace() {
+	local i=0
+	local FRAMES=${#BASH_LINENO[@]}
+	# FRAMES-2 skips main, the last one in arrays
+	for ((i=FRAMES-2; i>=0; i--)); do
+		echo '  File' \"${BASH_SOURCE[i+1]}\", line ${BASH_LINENO[i]}, in ${FUNCNAME[i+1]}
+		# Grab the source code of the line
+		sed -n "${BASH_LINENO[i]}{s/^/    /;p}" "${BASH_SOURCE[i+1]}"
+		# It requires `shopt -s extdebug'
+	done
+}
+
 enable_syslog() {
 	add_log_target SYSLOG
 }
