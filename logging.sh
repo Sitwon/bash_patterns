@@ -34,7 +34,7 @@ error_do(){ error && eval "${@}" >&3 || return 0; }
 trace_log(){
 	trace || return
 	if [ $# -eq 0 ]; then
-		while read _LINE; do
+		while IFS= read _LINE; do
 			trace_do echo -e "\${BOLD_WHITE}[TRACE] \${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${_LINE}\"\${RESET_COLOR}";
 		done
 		return
@@ -44,7 +44,7 @@ trace_log(){
 debug_log(){
 	debug || return
 	if [ $# -eq 0 ]; then
-		while read _LINE; do
+		while IFS= read _LINE; do
 			debug_do echo -e "\${BOLD_WHITE}[DEBUG] \${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: \"${_LINE}\"\${RESET_COLOR}";
 		done
 		return
@@ -54,7 +54,7 @@ debug_log(){
 info_log(){
 	info || return
 	if [ $# -eq 0 ]; then
-		while read _LINE; do
+		while IFS= read _LINE; do
 			info_do echo -e "\${BOLD_WHITE}[INFO ] \${RESET_COLOR}\"${_LINE}\"\${RESET_COLOR}";
 		done
 		return
@@ -64,7 +64,7 @@ info_log(){
 warn_log(){
 	warn || return
 	if [ $# -eq 0 ]; then
-		while read _LINE; do
+		while IFS= read _LINE; do
 			warn_do echo -e "\${BOLD_WHITE}[WARN ] \${BOLD_YELLOW}\"${_LINE}\"\${RESET_COLOR}";
 		done
 		return
@@ -74,7 +74,7 @@ warn_log(){
 error_log(){
 	error || return
 	if [ $# -eq 0 ]; then
-		while read _LINE; do
+		while IFS= read _LINE; do
 			error_do echo -e "\${BOLD_WHITE}[ERROR] \${BOLD_WHITE_RED}\"${_LINE}\"\${RESET_COLOR}";
 		done
 		return
@@ -123,12 +123,14 @@ print_stack_trace() {
 	local i=0
 	local FRAMES=${#BASH_LINENO[@]}
 	# FRAMES-2 skips main, the last one in arrays
+	echo 'Stack Trace:'
 	for ((i=FRAMES-2; i>=0; i--)); do
 		echo '  File' \"${BASH_SOURCE[i+1]}\", line ${BASH_LINENO[i]}, in ${FUNCNAME[i+1]}
 		# Grab the source code of the line
 		sed -n "${BASH_LINENO[i]}{s/^/    /;p}" "${BASH_SOURCE[i+1]}"
 		# It requires `shopt -s extdebug'
 	done
+	echo
 }
 
 enable_syslog() {
