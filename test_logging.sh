@@ -19,7 +19,13 @@ info_log "info"
 debug_log "debug"
 trace_log "trace"
 echo
+
 LOG_LEVEL=${TRACE}
+value_of LOG_LEVEL
+info_log "$(value_of LOG_LEVEL)"
+value_of LOG_LEVEL | info_log
+echo
+
 error_log "error"
 warn_log "warning"
 info_log "info"
