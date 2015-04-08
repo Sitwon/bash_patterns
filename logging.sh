@@ -19,11 +19,11 @@ LOG_LEVEL="${LOG_LEVEL:-${INFO}}"
 
 _LOG_TARGETS=( STDERR )
 
-trace(){ [ ${LOG_LEVEL} -ge ${TRACE} ] || return 1; }
-debug(){ [ ${LOG_LEVEL} -ge ${DEBUG} ] || return 1; }
-info(){ [ ${LOG_LEVEL} -ge ${INFO} ] || return 1; }
-warn(){ [ ${LOG_LEVEL} -ge ${WARN} ] || return 1; }
-error(){ [ ${LOG_LEVEL} -ge ${ERROR} ] || return 1; }
+trace(){ [ ${LOG_LEVEL} -ge ${TRACE} ]; }
+debug(){ [ ${LOG_LEVEL} -ge ${DEBUG} ]; }
+info(){ [ ${LOG_LEVEL} -ge ${INFO} ]; }
+warn(){ [ ${LOG_LEVEL} -ge ${WARN} ]; }
+error(){ [ ${LOG_LEVEL} -ge ${ERROR} ]; }
 
 trace_do(){ trace && eval "${@}" >&3 || return 0; }
 debug_do(){ debug && eval "${@}" >&3 || return 0; }
@@ -37,51 +37,51 @@ trace_log(){
 	trace || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			trace_do echo -e "\${BOLD_WHITE}[TRACE] \${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: $(escape "${_LINE}")\${RESET_COLOR}";
+			echo -e "${BOLD_WHITE}[TRACE] ${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${_LINE}${RESET_COLOR}" >&3
 		done
 		return
 	fi
-	trace_do echo -e "\${BOLD_WHITE}[TRACE] \${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: $(escape "${@}")\${RESET_COLOR}";
+	echo -e "${BOLD_WHITE}[TRACE] ${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${@}${RESET_COLOR}" >&3
 }
 debug_log(){
 	debug || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			debug_do echo -e "\${BOLD_WHITE}[DEBUG] \${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: $(escape "${_LINE}")\${RESET_COLOR}";
+			echo -e "${BOLD_WHITE}[DEBUG] ${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${_LINE}${RESET_COLOR}" >&3
 		done
 		return
 	fi
-	debug_do echo -e "\${BOLD_WHITE}[DEBUG] \${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: $(escape "${@}")\${RESET_COLOR}";
+	echo -e "${BOLD_WHITE}[DEBUG] ${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${@}${RESET_COLOR}" >&3
 }
 info_log(){
 	info || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			info_do echo -e "\${BOLD_WHITE}[INFO ] \${RESET_COLOR}$(escape "${_LINE}")\${RESET_COLOR}";
+			echo -e "${BOLD_WHITE}[INFO ] ${RESET_COLOR}${_LINE}${RESET_COLOR}" >&3
 		done
 		return
 	fi
-	info_do echo -e "\${BOLD_WHITE}[INFO ] \${RESET_COLOR}$(escape "${@}")\${RESET_COLOR}";
+	echo -e "${BOLD_WHITE}[INFO ] ${RESET_COLOR}${@}${RESET_COLOR}" >&3
 }
 warn_log(){
 	warn || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			warn_do echo -e "\${BOLD_WHITE}[WARN ] \${BOLD_YELLOW}$(escape "${_LINE}")\${RESET_COLOR}";
+			echo -e "${BOLD_WHITE}[WARN ] ${BOLD_YELLOW}${_LINE}${RESET_COLOR}" >&3
 		done
 		return
 	fi
-	warn_do echo -e "\${BOLD_WHITE}[WARN ] \${BOLD_YELLOW}$(escape "${@}")\${RESET_COLOR}";
+	echo -e "${BOLD_WHITE}[WARN ] ${BOLD_YELLOW}${@}${RESET_COLOR}" >&3
 }
 error_log(){
 	error || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			error_do echo -e "\${BOLD_WHITE}[ERROR] \${BOLD_WHITE_RED}$(escape "${_LINE}")\${RESET_COLOR}";
+			echo -e "${BOLD_WHITE}[ERROR] ${BOLD_WHITE_RED}${_LINE}${RESET_COLOR}" >&3
 		done
 		return
 	fi
-	error_do echo -e "\${BOLD_WHITE}[ERROR] \${BOLD_WHITE_RED}$(escape "${@}")\${RESET_COLOR}";
+	echo -e "${BOLD_WHITE}[ERROR] ${BOLD_WHITE_RED}${@}${RESET_COLOR}" >&3
 }
 
 log(){
