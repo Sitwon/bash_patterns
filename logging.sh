@@ -37,51 +37,51 @@ trace_log(){
 	trace || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			echo -e "${BOLD_WHITE}[TRACE] ${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${_LINE}${RESET_COLOR}" >&3
+			_echo -e "${BOLD_WHITE}[TRACE] ${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${_LINE}${RESET_COLOR}"
 		done
 		return
 	fi
-	echo -e "${BOLD_WHITE}[TRACE] ${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${@}${RESET_COLOR}" >&3
+	_echo -e "${BOLD_WHITE}[TRACE] ${BOLD_BLACK}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${@}${RESET_COLOR}"
 }
 debug_log(){
 	debug || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			echo -e "${BOLD_WHITE}[DEBUG] ${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${_LINE}${RESET_COLOR}" >&3
+			_echo -e "${BOLD_WHITE}[DEBUG] ${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${_LINE}${RESET_COLOR}"
 		done
 		return
 	fi
-	echo -e "${BOLD_WHITE}[DEBUG] ${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${@}${RESET_COLOR}" >&3
+	_echo -e "${BOLD_WHITE}[DEBUG] ${BOLD_BLUE}${BASH_SOURCE[1]}:${FUNCNAME[1]}:${BASH_LINENO[0]}: ${@}${RESET_COLOR}"
 }
 info_log(){
 	info || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			echo -e "${BOLD_WHITE}[INFO ] ${RESET_COLOR}${_LINE}${RESET_COLOR}" >&3
+			_echo -e "${BOLD_WHITE}[INFO ] ${RESET_COLOR}${_LINE}${RESET_COLOR}"
 		done
 		return
 	fi
-	echo -e "${BOLD_WHITE}[INFO ] ${RESET_COLOR}${@}${RESET_COLOR}" >&3
+	_echo -e "${BOLD_WHITE}[INFO ] ${RESET_COLOR}${@}${RESET_COLOR}"
 }
 warn_log(){
 	warn || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			echo -e "${BOLD_WHITE}[WARN ] ${BOLD_YELLOW}${_LINE}${RESET_COLOR}" >&3
+			_echo -e "${BOLD_WHITE}[WARN ] ${BOLD_YELLOW}${_LINE}${RESET_COLOR}"
 		done
 		return
 	fi
-	echo -e "${BOLD_WHITE}[WARN ] ${BOLD_YELLOW}${@}${RESET_COLOR}" >&3
+	_echo -e "${BOLD_WHITE}[WARN ] ${BOLD_YELLOW}${@}${RESET_COLOR}"
 }
 error_log(){
 	error || return
 	if [ $# -eq 0 ]; then
 		while IFS= read _LINE; do
-			echo -e "${BOLD_WHITE}[ERROR] ${BOLD_WHITE_RED}${_LINE}${RESET_COLOR}" >&3
+			_echo -e "${BOLD_WHITE}[ERROR] ${BOLD_WHITE_RED}${_LINE}${RESET_COLOR}"
 		done
 		return
 	fi
-	echo -e "${BOLD_WHITE}[ERROR] ${BOLD_WHITE_RED}${@}${RESET_COLOR}" >&3
+	_echo -e "${BOLD_WHITE}[ERROR] ${BOLD_WHITE_RED}${@}${RESET_COLOR}"
 }
 
 log(){
@@ -139,28 +139,20 @@ enable_syslog() {
 	add_log_target SYSLOG
 }
 
-init_log_targets() {
-	FIRST=
-	exec 3>&-
+_echo() {
 	for TARGET in ${_LOG_TARGETS[@]}; do
 		case "${TARGET}" in
 			"STDOUT")
-				[ -z "${FIRST}" ] && exec 3>&1 || exec 3> >(tee >(cat) >&3)
-				FIRST=done
+				echo "${@}"
 				;;
 			"STDERR")
-				[ -z "${FIRST}" ] && exec 3>&2 || exec 3> >(tee >(cat >&2) >&3)
-				FIRST=done
+				echo "${@}" >&2
 				;;
 			"SYSLOG")
-				[ -z "${FIRST}" ] && exec 3> >(logger -t "$(basename "${0}")") \
-					|| exec 3> >(tee >(logger -t "$(basename "${0}")") >&3)
-				FIRST=done
+				echo "${@}" > >(logger -t "$(basename "${0}")")
 				;;
 			*)
-				[ -z "${FIRST}" ] && exec 3> "${TARGET}" \
-					|| exec 3> >(tee -a "${TARGET}" >&3)
-				FIRST=done
+				echo "${@}" >>"${TARGET}"
 				;;
 		esac
 	done
@@ -171,7 +163,5 @@ add_log_target() {
 		_LOG_TARGETS[${#_LOG_TARGETS[*]}]="${1}"
 		shift
 	done
-	init_log_targets
 }
 
-init_log_targets
