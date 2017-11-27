@@ -6,7 +6,9 @@ else
 	export LOGGING_DEFINED="yes"
 fi
 
-. colors.sh
+BASE_DIR="$(dirname "${BASH_SOURCE}")"
+
+. "${BASE_DIR}/colors.sh"
 
 # Debug logging
 TRACE=4
