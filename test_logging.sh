@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source logging.sh
+BASE_DIR="$(dirname "${BASH_SOURCE}")"
+
+source "${BASE_DIR}/logging.sh"
 
 info_log "argument"
 info_log <<<"stdin"
