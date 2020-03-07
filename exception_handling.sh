@@ -15,7 +15,7 @@ catch() {
         file="$(caller $frame 2>&1 | cut -d ' ' -f 3)"
         echo "From $file:$line in $subroutine" >&2
         echo "    $(sed -n ${line}p $file)" >&2
-        ((frame++))
+        ((frame++)) || true
         line="$(caller $frame 2>&1 | cut -d ' ' -f 1)"
     done
     echo >&2
