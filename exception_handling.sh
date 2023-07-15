@@ -4,9 +4,12 @@ set -E
 trap 'catch $?' ERR EXIT
 
 catch() {
+    #trap '-' ERR EXIT
     if [ "$1" == 0 ]; then
         return
     fi
+
+    # Print stack trace
     echo "Caught error $1 in:" >&2
     frame=0
     line="$(caller $frame 2>&1 | cut -d ' ' -f 1)"
@@ -19,6 +22,9 @@ catch() {
         line="$(caller $frame 2>&1 | cut -d ' ' -f 1)"
     done
     echo >&2
+
+    # Put cleanup code here
+
     #exit $1
 }
 
